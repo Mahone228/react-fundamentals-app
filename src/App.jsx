@@ -1,46 +1,3 @@
-// Module 1:
-// * use mockedAuthorsList and mockedCoursesList mocked data
-// * add next components to the App component: Header, Courses and CourseInfo
-// * pass 'mockedAuthorsList' and 'mockedCoursesList' to the Courses and CourseInfo components
-// * use hook useState for saving selected courseId [showCourseId, handleShowCourse]
-import React, { useState } from "react";
-import styles from "./App.module.css";
-
-import { mockedAuthorsList, mockedCoursesList } from "./constants";
-import { Header, Courses, CourseInfo } from "./components";
-
-function App() {
-  const [showCourseId, setShowCourseId] = useState("");
-
-  const isCourseSelected = showCourseId !== "";
-
-  const content = isCourseSelected ? (
-    <CourseInfo
-      coursesList={mockedCoursesList}
-      authorsList={mockedAuthorsList}
-      showCourseId={showCourseId}
-      onBack={() => setShowCourseId("")}
-    />
-  ) : (
-    <Courses
-      coursesList={mockedCoursesList}
-      authorsList={mockedAuthorsList}
-      handleShowCourse={setShowCourseId}
-    />
-  );
-
-  return (
-    <>
-      <div className={styles.wrapper}>
-        <Header />
-        <main className={styles.container}>{content}</main>
-      </div>
-    </>
-  );
-}
-
-export default App;
-
 // Module 2:
 // * use mockedAuthorsList and mockedCoursesList mocked data
 // * remove useState for selected courseId
@@ -48,6 +5,112 @@ export default App;
 // * import Routes and Route from 'react-router-dom'
 // * Add Routes to the container div (do not include Header to the Routes since header will not be changed with pages)
 // ** TASK DESCRIPTION ** - https://react-fundamentals-tasks.vercel.app/docs/module-2/home-task/components#add-the-router-to-the-app-component
+import React, { useEffect, useState } from "react";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+import styles from "./App.module.css";
+import {
+  Header,
+  Registration,
+  Login,
+  Courses,
+  CourseInfo,
+  CourseForm,
+} from "./components";
+import { mockedCoursesList, mockedAuthorsList } from "./constants";
+
+function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [userName, setUserName] = useState(() =>
+    localStorage.getItem("userName")
+  );
+  const [courses, setCourses] = useState([...mockedCoursesList]);
+  const [authors, setAuthors] = useState([...mockedAuthorsList]);
+
+  const isAuthPage = ["/login", "/registration"].includes(location.pathname);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUserName = localStorage.getItem("userName");
+
+    setToken(storedToken);
+    setUserName(storedUserName);
+
+    if (!location.pathname || location.pathname === "/") {
+      navigate(storedToken ? "/courses" : "/login", { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    setToken(null);
+    setUserName(null);
+    navigate("/login");
+  };
+
+  const handleCreateCourse = (newCourse) =>
+    setCourses((prevCourses) => [...prevCourses, newCourse]);
+
+  const handleCreateAuthor = (newAuthor) =>
+    setAuthors((prevAuthors) => [...prevAuthors, newAuthor]);
+
+  const renderProtected = (element) =>
+    token ? element : <Navigate to="/login" />;
+
+  return (
+    <div className={styles.wrapper}>
+      {token && !isAuthPage && (
+        <Header userName={userName} onLogout={handleLogout} />
+      )}
+      <div className={styles.container}>
+        <Routes>
+          <Route
+            path="/login"
+            element={<Login setToken={setToken} setUserName={setUserName} />}
+          />
+          <Route path="/registration" element={<Registration />} />
+          <Route
+            path="/courses"
+            element={renderProtected(
+              <Courses coursesList={courses} authorsList={authors} />
+            )}
+          />
+          <Route
+            path="/courses/:courseId"
+            element={renderProtected(
+              <CourseInfo coursesList={courses} authorsList={authors} />
+            )}
+          />
+          <Route
+            path="/courses/add"
+            element={renderProtected(
+              <CourseForm
+                authorsList={authors}
+                createCourse={handleCreateCourse}
+                createAuthor={handleCreateAuthor}
+              />
+            )}
+          />
+          <Route
+            path="*"
+            element={<Navigate to={token ? "/courses" : "/login"} />}
+          />
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
+export default App;
 
 // Module 3:
 // * the App component and BrowserRouter components should be wrapped with Redux 'Provider' in src/index.js

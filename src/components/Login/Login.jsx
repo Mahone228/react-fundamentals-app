@@ -17,27 +17,91 @@
 
 // // Module 4.
 // // * use 'setUserData' from 'userSlice.js' to add user's data to store. (DO NOT use 'user/me' [GET] request)
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import styles from "./styles.module.css";
+import { Input } from "../../common/Input/Input";
+import { Button } from "../../common/Button/Button";
+import { login } from "../../services";
 
-// import React from "react";
+export const Login = ({ setToken, setUserName }) => {
+  const navigate = useNavigate();
 
-// import styles from "./styles.module.css";
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-// export const Login = () => {
-//   // write your code here
+  const [errors, setErrors] = useState({});
 
-//   return (
-//     <div className={styles.container}>
-//       <h1>Login</h1>
-//       <div className={styles.formContainer}>
-//         <form onSubmit={handleSubmit}>
-//           // reuse Input component for email field // reuse Input component for
-//           password field // reuse Button component for 'Login' button
-//         </form>
-//         <p>
-//           If you don't have an account you may&nbsp; // use <Link /> component
-//           for navigation to Registration page
-//         </p>
-//       </div>
-//     </div>
-//   );
-// };
+  const onInputChange = ({ target: { name, value } }) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  const validateForm = () => {
+    const errorMap = {};
+    if (!formData.email.trim()) errorMap.email = "Email is required";
+    if (!formData.password.trim()) errorMap.password = "Password is required";
+    return errorMap;
+  };
+
+  const onFormSubmit = async (event) => {
+    event.preventDefault();
+    const formErrors = validateForm();
+    setErrors(formErrors);
+
+    if (Object.keys(formErrors).length) return;
+
+    try {
+      const response = await login(formData);
+      localStorage.setItem("token", response.result);
+      localStorage.setItem("userName", response.user.name);
+      setToken(response.result);
+      setUserName(response.user.name);
+      navigate("/courses");
+    } catch (err) {
+      alert(err.message || "Something went wrong");
+    }
+  };
+
+  const renderField = (name, label, placeholder, type = "text") => (
+    <>
+      <Input
+        labelText={label}
+        name={name}
+        type={type}
+        value={formData[name]}
+        onChange={onInputChange}
+        placeholder={placeholder}
+        data-testid={`${name}Input`}
+      />
+      {errors[name] && (
+        <div className={styles.error} data-testid={`${name}Error`}>
+          {errors[name]}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className={styles.container}>
+      <h1>Login</h1>
+      <div className={styles.formContainer}>
+        <form onSubmit={onFormSubmit} data-testid="loginForm">
+          {renderField("email", "Email", "Enter your email")}
+          {renderField("password", "Password", "Enter password", "password")}
+          <Button buttonText="Login" type="submit" data-testid="loginButton" />
+        </form>
+        <p>
+          <span>If you don't have an account you </span>
+          <Link to="/registration" data-testid="registrationLink">
+            Registration
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};

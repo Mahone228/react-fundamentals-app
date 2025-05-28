@@ -4,11 +4,4 @@
 import React from "react";
 import styles from "./styles.module.css";
 import logo from "../../../../assets/logo.svg";
-
-export const Logo = function () {
-  return (
-    <picture>
-      <img src={logo} alt="logo" className={styles.logo} />
-    </picture>
-  );
-};
+export const Logo = () => <img src={logo} className={styles.logo} alt="logo" />;

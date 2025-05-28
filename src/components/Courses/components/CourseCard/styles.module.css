@@ -1,13 +1,12 @@
 .cardContainer {
 	display: flex;
-	padding: 6px 12px;
+	padding: 8px 16px;
 	justify-content: space-between;
 	gap: 16px;
 	border-left: 5px solid #333e48;
 	border-radius: 5px;
 	box-shadow: 2px 0px 8px 0px rgba(0, 0, 0, 0.25);
-	margin-bottom: 24px;
-	font-size: 14px; 
+	margin-bottom: 30px;
 }
 
 .cardText {
@@ -22,24 +21,27 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
-	margin: 4px 0;
 }
 
 .cardDetails > p > b {
-	padding-right: 4px;
+	padding-right: 5px;
 }
 
 .buttonsContainer {
 	display: flex;
-	gap: 8px;
-	margin-top: 8px;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.noUnderline {
+	text-decoration: none;
 }
 
 .iconButton {
 	background-color: #007298;
 	border: none;
 	border-radius: 4px;
-	padding: 6px 8px;
+	padding: 10px 12px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -52,6 +54,6 @@
 }
 
 .iconButton img {
-	width: 14px;
-	height: 14px;
+	width: 18px;
+	height: 18px;
 }

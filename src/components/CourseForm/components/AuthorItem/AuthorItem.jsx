@@ -1,11 +1,34 @@
-// import React from "react";
+import React from "react";
+import styles from "./styles.module.css";
+import { Button } from "../../../../common";
+import deleteIcon from "../../../../assets/deleteButtonIcon.svg";
 
-// import styles from "./styles.module.css";
-
-// export const AuthorItem = () => (
-// 	<div className={styles.authorItem} data-testid='authorItem'>
-// 		<span>Boris Smith</span>
-
-// 		// reuse Button component for 'Add author' button with data-testid="addAuthor" attribute
-// 	</div>
-// );
+export const AuthorItem = ({
+  name,
+  onClick,
+  buttonText,
+  testId,
+  isRemovable,
+}) => {
+  return (
+    <div className={styles.authorItem} data-testid="authorItem">
+      <span className={styles.authorName}>{name}</span>
+      <Button
+        buttonText={
+          isRemovable ? (
+            <img
+              src={deleteIcon}
+              alt="delete"
+              className={styles.icon}
+              data-testid="deleteIcon"
+            />
+          ) : (
+            buttonText
+          )
+        }
+        handleClick={onClick}
+        data-testid={testId}
+      />
+    </div>
+  );
+};

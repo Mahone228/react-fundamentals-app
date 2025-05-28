@@ -1,60 +1,39 @@
-// export const createUser = async (data) => {
-//   const response = await fetch("change with your url", {
-//     method: "POST",
-//     body: JSON.stringify(data),
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//   });
+export const createUser = async (data) => {
+  try {
+    const response = await fetch("http://localhost:4000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-//   if (!response.ok) {
-//     throw new Error("Network Error");
-//   }
+    const result = await response.json();
 
-//   return await response.json();
-// };
+    if (!response.ok) {
+      throw new Error(result?.result || "Unable to register user");
+    }
 
-// export const login = async (data) => {
-//   // write your code here
-//   return await response.json();
-// };
+    return result;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
 
-// export const getCourses = async () => {
-//   // write your code here
-//   return await response.json();
-// };
+export const login = async (data) => {
+  try {
+    const response = await fetch("http://localhost:4000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-// export const getAuthors = async () => {
-//   // write your code here
-//   return await response.json();
-// };
+    const result = await response.json();
 
-// export const getCurrentUser = async () => {
-//   // write your code here
-//   return await response.json();
-// };
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(result?.result || "Invalid credentials");
+    }
 
-// export const updateCourseService = async () => {
-//   // write your code here
-//   return await response.json();
-// };
-
-// export const logout = async () => {
-//   // write your code here
-//   return await response.json();
-// };
-
-// export const deleteCourseService = async () => {
-//   // write your code here
-//   return await response.json();
-// };
-
-// export const createCourse = async () => {
-//   // write your code here
-//   return await response.json();
-// };
-
-// export const createAuthor = async () => {
-//   // write your code here
-//   return await response.json();
-// };
+    return result;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
