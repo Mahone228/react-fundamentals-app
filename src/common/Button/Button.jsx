@@ -4,14 +4,18 @@
 import React from "react";
 import styles from "./styles.module.css";
 
-export const Button = ({ buttonText, handleClick, "data-testid": testId }) => {
-  return React.createElement(
-    "button",
-    {
-      className: styles.button,
-      onClick: handleClick,
-      "data-testid": testId,
-    },
-    buttonText
-  );
-};
+export const Button = ({
+  buttonText,
+  handleClick,
+  "data-testid": dataTestId,
+  type = "button",
+}) => (
+  <button
+    className={styles.button}
+    data-testid={dataTestId}
+    onClick={handleClick}
+    type={type}
+  >
+    {buttonText}
+  </button>
+);

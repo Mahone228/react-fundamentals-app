@@ -1,36 +1,87 @@
-// // Module 1. You don't need to do anything with this component (we had to comment this component for 1st module tests)
-//
-// // Module 2.
-// // * uncomment this component (ctrl + a => ctrl + /)
-// // * finish markup according to the figma https://www.figma.com/design/m0N0SGLclqUEGR6TUNvyn9/Fundamentals-Courses?node-id=2932-219&t=OXbHXwMixWTtxRSw-1
-// // * add validation for fields: all fields are required. Show validation message. https://www.figma.com/design/m0N0SGLclqUEGR6TUNvyn9/Fundamentals-Courses?node-id=2932-257&t=OXbHXwMixWTtxRSw-1
-// // * render this component by route '/registration'
-// // * submit form data and make POST API request '/registration'.
-// // * after successful registration navigates to '/login' route.
-// // * component should have a link to the Login page (see design)
-// // ** TASK DESCRIPTION ** - https://react-fundamentals-tasks.vercel.app/docs/module-2/home-task/components#registration-new-component
-//
-// import React from "react";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import styles from "./styles.module.css";
+import { Input } from "../../common/Input/Input";
+import { Button } from "../../common/Button/Button";
+import { createUser } from "../../services";
 
-// import styles from "./styles.module.css";
+export const Registration = () => {
+  const navigate = useNavigate();
 
-// export const Registration = () => {
-//   // write your code here
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({});
 
-//   return (
-//     <div className={styles.container}>
-//       <h1>Registration</h1>
-//       <div className={styles.formContainer}>
-//         <form onSubmit={handleSubmit}>
-//           // reuse Input component for email field
-//           // reuse Input component for name field
-//           // reuse Input component for password field
-//           // reuse Button component for 'Login' button
-//         </form>
-//         <p>
-//           If you have an account you may&nbsp; // use <Link /> component for navigation to Login page
-//         </p>
-//       </div>
-//     </div>
-//   );
-// };
+  const handleChange = ({ target }) => {
+    setFormData((prev) => ({ ...prev, [target.name]: target.value }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    if (!formData.password.trim()) newErrors.password = "Password is required";
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) return;
+
+    try {
+      await createUser(formData);
+      navigate("/login");
+    } catch (err) {
+      alert(err.message || "Something went wrong");
+    }
+  };
+
+  const renderInput = (name, labelText, placeholderText, type = "text") => (
+    <>
+      <Input
+        labelText={labelText}
+        name={name}
+        value={formData[name]}
+        onChange={handleChange}
+        placeholderText={placeholderText}
+        type={type}
+        data-testid={`${name}Input`}
+      />
+      {errors[name] && (
+        <div className={styles.error} data-testid={`${name}Error`}>
+          {errors[name]}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className={styles.container}>
+      <h1>Registration</h1>
+      <div className={styles.formContainer}>
+        <form onSubmit={handleSubmit} data-testid="registrationForm">
+          {renderInput("name", "Name", "Enter your name")}
+          {renderInput("email", "Email", "Enter your email")}
+          {renderInput("password", "Password", "Enter password", "password")}
+          <Button
+            buttonText="Register"
+            type="submit"
+            data-testid="registrationButton"
+          />
+        </form>
+        <p>
+          If you have an account you may{" "}
+          <Link to="/login" data-testid="loginLink">
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};

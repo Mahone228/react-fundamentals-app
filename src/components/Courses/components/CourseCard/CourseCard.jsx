@@ -1,94 +1,68 @@
-// Module 1.
-// * figma link: https://www.figma.com/design/m0N0SGLclqUEGR6TUNvyn9/Fundamentals-Courses?node-id=2905-67147&t=OXbHXwMixWTtxRSw-1
-// * render this component inside 'Courses' component
-// * this component should display single course info:
-//   ** title;
-//   ** description;
-//   ** authors list. Authors' names should be displayed on the one line, add '...' if authors' names do not fit on one line.
-//   ** duration (format: hh:mm + 'hours'). Create function 'src/helpers/getCourseDuration.js' for duration mapping;
-//   ** creation date (format: dd.mm.yyyy). Create function 'src/helpers/formatCreationDate.js' for date formatting;
-//   ** show course button. Render 'CourseInfo' component with course's data instead of 'Courses' component
-// ** TASK DESCRIPTION ** - https://react-fundamentals-tasks.vercel.app/docs/module-1/home-task/components#coursecard-component
-// * find course's authors in the 'authorsList' by ids
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { getCourseDuration, formatCreationDate } from "../../../../helpers";
 import styles from "./styles.module.css";
+import { Button } from "../../../../common";
 
 import deleteIcon from "../../../../assets/deleteButtonIcon.svg";
 import editIcon from "../../../../assets/editButtonIcon.svg";
 
-import { getCourseDuration, formatCreationDate } from "../../../../helpers";
-import { Button } from "../../../../common";
+export const CourseCard = ({ course, authorsList, onDeleteCourse }) => {
+  const navigate = useNavigate();
 
-export const CourseCard = ({
-  course,
-  handleShowCourse,
-  authorsList,
-  onDeleteCourse,
-}) => {
-  const formatAuthors = () =>
+  const getAuthorNames = () =>
     course.authors
       .map((authorId) => {
-        const found = authorsList.find((author) => author.id === authorId);
-        return found?.name || "Unknown Author";
+        const match = authorsList.find((author) => author.id === authorId);
+        return match ? match.name : "Unknown Author";
       })
       .join(", ");
 
+  const handleEdit = () => {
+    navigate(`/courses/update/${course.id}`);
+  };
+
   return (
-    <section className={styles.cardContainer} data-testid="courseCard">
-      <header className={styles.cardText}>
-        <h2>{course.title}</h2>
-        <p>{course.description}</p>
-      </header>
+    <div className={styles.cardContainer} data-testid="courseCard">
+      <div className={styles.cardText}>
+        <h2 className={styles.title}>{course.title}</h2>
+        <p className={styles.description}>{course.description}</p>
+      </div>
 
       <div className={styles.cardDetails}>
         <p>
-          <strong>Authors:</strong> {formatAuthors()}
+          <b>Authors:</b>{" "}
+          <span className={styles.authorsLine}>{getAuthorNames()}</span>
         </p>
         <p>
-          <strong>Duration:</strong> {getCourseDuration(course.duration)}
+          <b>Duration:</b> {getCourseDuration(course.duration)}
         </p>
         <p>
-          <strong>Created:</strong> {formatCreationDate(course.creationDate)}
+          <b>Created:</b> {formatCreationDate(course.creationDate)}
         </p>
 
-        <footer className={styles.buttonsContainer}>
-          <Button
-            buttonText="SHOW COURSE"
-            handleClick={() => handleShowCourse(course.id)}
-          />
-          <img
-            src={deleteIcon}
-            alt="Delete"
+        <div className={styles.buttonsContainer}>
+          <Link to={`/courses/${course.id}`} className={styles.noUnderline}>
+            <Button buttonText="SHOW COURSE" />
+          </Link>
+
+          <button
+            onClick={() => onDeleteCourse?.(course.id)}
             className={styles.iconButton}
-            onClick={() => onDeleteCourse(course.id)}
-          />
-          <img src={editIcon} alt="Edit" className={styles.iconButton} />
-        </footer>
+            data-testid="deleteCourse"
+          >
+            <img src={deleteIcon} alt="Delete" />
+          </button>
+
+          <button
+            onClick={handleEdit}
+            className={styles.iconButton}
+            data-testid="editCourse"
+          >
+            <img src={editIcon} alt="Edit" />
+          </button>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
-
-// Module 2.
-// * remove prop 'handleShowCourse' => use 'Link' from 'react-router-dom' instead
-
-// Module 3.
-// * add two new buttons: update and delete'. Use icons from 'src/assets/...'.
-// * remove course from the store by 'delete' button click
-// * no functionality for 'update' button for now
-// ** TASK DESCRIPTION ** - https://react-fundamentals-tasks.vercel.app/docs/module-3/home-task/components#coursecard-component
-// * remove prop 'authorsList' => use 'getAuthorsSelector' to get authors from store
-
-// Module 4.
-// * show 'delete' and 'update' buttons only for ADMIN user
-// * make delete request by 'delete' button click
-// * use 'deleteCourseService' from 'src/services.js' and 'deleteCourseThunk' thunk from 'src/store/thinks/coursesThunk.js'
-// ** TASK DESCRIPTION ** - https://react-fundamentals-tasks.vercel.app/docs/module-4/home-task/components#coursecard-component
-
-// Module 5:
-// * proposed cases for unit tests:
-//   ** CourseCard should display title.
-//   ** CourseCard should display description.
-//   ** CourseCard should display duration in the correct format.
-//   ** CourseCard should display authors list.
-//   ** CourseCard should display created date in the correct format.
