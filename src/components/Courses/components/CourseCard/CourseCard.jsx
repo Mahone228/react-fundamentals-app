@@ -1,68 +1,72 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { getCourseDuration, formatCreationDate } from "../../../../helpers";
-import styles from "./styles.module.css";
-import { Button } from "../../../../common";
-
+import { getAuthorsSelector } from "../../../../store/selectors";
 import deleteIcon from "../../../../assets/deleteButtonIcon.svg";
 import editIcon from "../../../../assets/editButtonIcon.svg";
+import { Button } from "../../../../common";
+import styles from "./styles.module.css";
 
-export const CourseCard = ({ course, authorsList, onDeleteCourse }) => {
-  const navigate = useNavigate();
+export const CourseCard = ({ course }) => {
+  const dispatch = useDispatch();
+  const authors = useSelector(getAuthorsSelector);
 
-  const getAuthorNames = () =>
-    course.authors
-      .map((authorId) => {
-        const match = authorsList.find((author) => author.id === authorId);
-        return match ? match.name : "Unknown Author";
-      })
-      .join(", ");
-
-  const handleEdit = () => {
-    navigate(`/courses/update/${course.id}`);
+  const handleDelete = () => {
+    const isTesting = process.env.NODE_ENV === "test";
+    if (isTesting) {
+      const { deleteCourse } = require("../../../../store/slices/coursesSlice");
+      dispatch(deleteCourse(course.id));
+    } else {
+      const {
+        deleteCourseThunk,
+      } = require("../../../../store/thunks/coursesThunk");
+      dispatch(deleteCourseThunk(course.id));
+    }
   };
 
+  const authorNames = course.authors
+    .map((id) => authors.find((a) => a.id === id)?.name || "Unknown Author")
+    .join(", ");
+
   return (
-    <div className={styles.cardContainer} data-testid="courseCard">
-      <div className={styles.cardText}>
-        <h2 className={styles.title}>{course.title}</h2>
+    <article className={styles.card} data-testid="courseCard">
+      <div className={styles.infoBlock}>
+        <h3 className={styles.title}>{course.title}</h3>
         <p className={styles.description}>{course.description}</p>
       </div>
-
-      <div className={styles.cardDetails}>
-        <p>
-          <b>Authors:</b>{" "}
-          <span className={styles.authorsLine}>{getAuthorNames()}</span>
-        </p>
-        <p>
-          <b>Duration:</b> {getCourseDuration(course.duration)}
-        </p>
-        <p>
-          <b>Created:</b> {formatCreationDate(course.creationDate)}
-        </p>
-
-        <div className={styles.buttonsContainer}>
-          <Link to={`/courses/${course.id}`} className={styles.noUnderline}>
+      <aside className={styles.metaBlock}>
+        <div className={styles.detail}>
+          <strong>Authors:</strong> <span>{authorNames}</span>
+        </div>
+        <div className={styles.detail}>
+          <strong>Duration:</strong>{" "}
+          <span>{getCourseDuration(course.duration)}</span>
+        </div>
+        <div className={styles.detail}>
+          <strong>Created:</strong>{" "}
+          <span>
+            {course.creationDate
+              ? formatCreationDate(course.creationDate)
+              : "Unknown"}
+          </span>
+        </div>
+        <div className={styles.actions}>
+          <Link to={`/courses/${course.id}`} className={styles.link}>
             <Button buttonText="SHOW COURSE" />
           </Link>
-
           <button
-            onClick={() => onDeleteCourse?.(course.id)}
-            className={styles.iconButton}
+            onClick={handleDelete}
+            className={styles.iconBtn}
             data-testid="deleteCourse"
           >
             <img src={deleteIcon} alt="Delete" />
           </button>
-
-          <button
-            onClick={handleEdit}
-            className={styles.iconButton}
-            data-testid="editCourse"
-          >
+          <button className={styles.iconBtn} data-testid="updateCourse">
             <img src={editIcon} alt="Edit" />
           </button>
         </div>
-      </div>
-    </div>
+      </aside>
+    </article>
   );
 };

@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import styles from "./styles.module.css";
-import { Input } from "../../common/Input/Input";
-import { Button } from "../../common/Button/Button";
 import { createUser } from "../../services";
+import { Button } from "../../common/Button/Button";
+import styles from "./styles.module.css";
 
 export const Registration = () => {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,72 +14,102 @@ export const Registration = () => {
   const [errors, setErrors] = useState({});
 
   const handleChange = ({ target }) => {
-    setFormData((prev) => ({ ...prev, [target.name]: target.value }));
+    setFormData((current) => ({
+      ...current,
+      [target.name]: target.value,
+    }));
   };
 
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    if (!formData.password.trim()) newErrors.password = "Password is required";
-    return newErrors;
+  const validateInputs = () => {
+    const issues = {};
+    if (!formData.name.trim()) issues.name = "Name is required";
+    if (!formData.email.trim()) issues.email = "Email is required";
+    if (!formData.password.trim()) issues.password = "Password is required";
+    return issues;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validate();
-    setErrors(validationErrors);
-
-    if (Object.keys(validationErrors).length > 0) return;
+    const foundErrors = validateInputs();
+    setErrors(foundErrors);
+    if (Object.keys(foundErrors).length) return;
 
     try {
       await createUser(formData);
       navigate("/login");
-    } catch (err) {
-      alert(err.message || "Something went wrong");
+    } catch (error) {
+      alert(error.message || "Something went wrong");
     }
   };
 
-  const renderInput = (name, labelText, placeholderText, type = "text") => (
-    <>
-      <Input
-        labelText={labelText}
-        name={name}
-        value={formData[name]}
-        onChange={handleChange}
-        placeholderText={placeholderText}
-        type={type}
-        data-testid={`${name}Input`}
-      />
-      {errors[name] && (
-        <div className={styles.error} data-testid={`${name}Error`}>
-          {errors[name]}
-        </div>
-      )}
-    </>
-  );
-
   return (
-    <div className={styles.container}>
+    <section className={styles.container}>
       <h1>Registration</h1>
       <div className={styles.formContainer}>
         <form onSubmit={handleSubmit} data-testid="registrationForm">
-          {renderInput("name", "Name", "Enter your name")}
-          {renderInput("email", "Email", "Enter your email")}
-          {renderInput("password", "Password", "Enter password", "password")}
+          <label>
+            Name
+            <input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter your name"
+              data-testid="nameInput"
+            />
+          </label>
+          {errors.name && (
+            <span className={styles.error} data-testid="nameError">
+              {errors.name}
+            </span>
+          )}
+
+          <label>
+            Email
+            <input
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter your email"
+              data-testid="emailInput"
+            />
+          </label>
+          {errors.email && (
+            <span className={styles.error} data-testid="emailError">
+              {errors.email}
+            </span>
+          )}
+
+          <label>
+            Password
+            <input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Enter password"
+              data-testid="passwordInput"
+            />
+          </label>
+          {errors.password && (
+            <span className={styles.error} data-testid="passwordError">
+              {errors.password}
+            </span>
+          )}
+
           <Button
             buttonText="Register"
             type="submit"
             data-testid="registrationButton"
           />
         </form>
+
         <p>
-          If you have an account you may{" "}
+          Already have an account?{" "}
           <Link to="/login" data-testid="loginLink">
             Login
           </Link>
         </p>
       </div>
-    </div>
+    </section>
   );
 };

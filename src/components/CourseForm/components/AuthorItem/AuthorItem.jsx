@@ -16,12 +16,7 @@ export const AuthorItem = ({
       <Button
         buttonText={
           isRemovable ? (
-            <img
-              src={deleteIcon}
-              alt="delete"
-              className={styles.icon}
-              data-testid="deleteIcon"
-            />
+            <img src={deleteIcon} alt="delete" className={styles.icon} />
           ) : (
             buttonText
           )
