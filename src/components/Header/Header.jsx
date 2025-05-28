@@ -2,24 +2,29 @@ import React from "react";
 import styles from "./styles.module.css";
 import { Logo } from "./components";
 import { Button } from "../../common";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserNameSelector } from "../../store/selectors";
+import { removeUserData } from "../../store/slices/userSlice";
 
-export const Header = ({ userName = "Harry Potter", onLogout }) => {
-  const tokenExists = !!localStorage.getItem("token");
+export const Header = () => {
+  const dispatch = useDispatch();
+  const userName = useSelector(getUserNameSelector);
+  const token = localStorage.getItem("token");
 
   const handleLogoutClick = () => {
     localStorage.removeItem("token");
-    if (typeof onLogout === "function") onLogout();
+    dispatch(removeUserData());
   };
 
   return (
-    <header className={styles.headerContainer}>
+    <div className={styles.headerContainer}>
       <Logo />
-      {tokenExists && (
+      {token && (
         <div className={styles.userContainer}>
           <p className={styles.userName}>{userName}</p>
           <Button buttonText="LOGOUT" handleClick={handleLogoutClick} />
         </div>
       )}
-    </header>
+    </div>
   );
 };

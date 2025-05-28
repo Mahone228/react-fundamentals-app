@@ -1,43 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
 import { Input, Button } from "../../common";
 import { getCourseDuration } from "../../helpers";
 import { AuthorItem } from "./components/AuthorItem/AuthorItem";
 import { CreateAuthor } from "./components/CreateAuthor/CreateAuthor";
+import { useDispatch, useSelector } from "react-redux";
+import { getAuthorsSelector } from "../../store/selectors";
+import { saveCourse } from "../../store/slices/coursesSlice";
 
-export const CourseForm = ({ authorsList, createCourse, createAuthor }) => {
+export const CourseForm = () => {
+  const dispatch = useDispatch();
+  const authorsList = useSelector(getAuthorsSelector);
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("");
-  const [availableAuthors, setAvailableAuthors] = useState(authorsList);
+  const [availableAuthors, setAvailableAuthors] = useState([]);
   const [courseAuthors, setCourseAuthors] = useState([]);
 
-  const isFormValid = () => {
-    return (
-      title.trim().length >= 2 &&
-      description.trim().length >= 2 &&
-      Number(duration) > 0 &&
-      courseAuthors.length > 0
-    );
-  };
+  useEffect(() => {
+    setAvailableAuthors(authorsList);
+  }, [authorsList]);
 
-  const handleSubmit = (e) => {
+  const handleCreateCourse = (e) => {
     e.preventDefault();
-    if (!isFormValid()) {
-      alert("Please fill in all fields correctly.");
+
+    if (
+      title.trim().length < 2 ||
+      description.trim().length < 2 ||
+      Number(duration) <= 0 ||
+      courseAuthors.length === 0
+    ) {
+      alert("All fields must be valid and filled in.");
       return;
     }
 
     const newCourse = {
-      id: Date.now().toString(),
       title,
       description,
-      creationDate: new Date().toLocaleDateString("en-GB"),
       duration: Number(duration),
       authors: courseAuthors.map((a) => a.id),
     };
 
-    createCourse(newCourse);
+    dispatch(saveCourse(newCourse));
 
     setTitle("");
     setDescription("");
@@ -46,28 +51,23 @@ export const CourseForm = ({ authorsList, createCourse, createAuthor }) => {
     setAvailableAuthors(authorsList);
   };
 
-  const addAuthor = (author) => {
-    setAvailableAuthors((prev) => prev.filter((a) => a.id !== author.id));
-    setCourseAuthors((prev) => [...prev, author]);
+  const addAuthorToCourse = (author) => {
+    setAvailableAuthors(availableAuthors.filter((a) => a.id !== author.id));
+    setCourseAuthors([...courseAuthors, author]);
   };
 
-  const removeAuthor = (author) => {
-    setCourseAuthors((prev) => prev.filter((a) => a.id !== author.id));
-    setAvailableAuthors((prev) => [...prev, author]);
-  };
-
-  const handleNewAuthor = (author) => {
-    setAvailableAuthors((prev) => [...prev, author]);
-    createAuthor(author);
+  const removeAuthorFromCourse = (author) => {
+    setCourseAuthors(courseAuthors.filter((a) => a.id !== author.id));
+    setAvailableAuthors([...availableAuthors, author]);
   };
 
   return (
     <div className={styles.container}>
-      <h2>Course Form</h2>
+      <h2 className={styles.pageTitle}>Course Edit/Create Page</h2>
       <form
-        onSubmit={handleSubmit}
-        className={styles.form}
+        onSubmit={handleCreateCourse}
         data-testid="courseForm"
+        className={styles.form}
       >
         <Input
           labelText="Title"
@@ -89,39 +89,35 @@ export const CourseForm = ({ authorsList, createCourse, createAuthor }) => {
           data-testid="descriptionTextArea"
         />
 
-        <Input
-          labelText="Duration (minutes)"
-          name="duration"
-          type="number"
-          min="1"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          placeholderText="Enter duration"
-          data-testid="durationInput"
-        />
-        <p>
-          <b>Total time:</b> {getCourseDuration(Number(duration))}
-        </p>
-
         <div className={styles.columns}>
           <div className={styles.leftColumn}>
-            <h3>Create Author</h3>
-            <CreateAuthor onCreateAuthor={handleNewAuthor} />
+            <Input
+              labelText="Duration"
+              name="duration"
+              type="number"
+              min="1"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholderText="Enter duration in minutes"
+              data-testid="durationInput"
+            />
+            <div className={styles.durationOutput}>
+              {getCourseDuration(Number(duration))} hours
+            </div>
 
-            <h4>Available Authors</h4>
-            {availableAuthors.length > 0 ? (
-              availableAuthors.map((author) => (
-                <AuthorItem
-                  key={author.id}
-                  name={author.name}
-                  buttonText="Add"
-                  onClick={() => addAuthor(author)}
-                  testId="addAuthor"
-                />
-              ))
-            ) : (
-              <p>No authors available</p>
-            )}
+            <h3>Authors</h3>
+            <CreateAuthor />
+
+            <h4 className={styles.subTitle}>Authors List</h4>
+            {availableAuthors.map((author) => (
+              <AuthorItem
+                key={author.id}
+                name={author.name}
+                buttonText="Add author"
+                onClick={() => addAuthorToCourse(author)}
+                testId="addAuthor"
+              />
+            ))}
           </div>
 
           <div className={styles.rightColumn}>
@@ -131,13 +127,14 @@ export const CourseForm = ({ authorsList, createCourse, createAuthor }) => {
                 <AuthorItem
                   key={author.id}
                   name={author.name}
-                  buttonText="Remove"
-                  onClick={() => removeAuthor(author)}
+                  buttonText="Delete author"
+                  onClick={() => removeAuthorFromCourse(author)}
                   testId="deleteAuthor"
+                  isRemovable
                 />
               ))
             ) : (
-              <p>Author list is empty</p>
+              <p className={styles.notification}>Author list is empty</p>
             )}
           </div>
         </div>
