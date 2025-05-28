@@ -1,40 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const tokenFromStorage = localStorage.getItem("token");
-
 const initialState = {
-  isAuth: !!tokenFromStorage,
+  isAuth: false,
   name: "",
   email: "",
-  token: tokenFromStorage || "",
+  token: localStorage.getItem("token"),
 };
 
 export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUserData: (_, action) => {
-      const { name, email, token } = action.payload;
-      localStorage.setItem("token", token);
-      return {
-        isAuth: true,
-        name,
-        email,
-        token,
-      };
-    },
-    removeUserData: () => {
-      localStorage.removeItem("token");
-      return {
-        isAuth: false,
-        name: "",
-        email: "",
-        token: "",
-      };
-    },
+    // setUserData:
+    // removeUserData:
   },
 });
 
+// use these actions in your components / thunks
 export const { setUserData, removeUserData } = userSlice.actions;
 
 export default userSlice.reducer;

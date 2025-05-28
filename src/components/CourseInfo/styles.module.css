@@ -13,23 +13,22 @@
 	background: #fff;
   }
   
-  .description {
-	width: 60%;
-	border-right: 1px solid #cfcfcf;
-  }
-  
   .authorsList {
 	list-style: none;
 	padding-left: 0;
+  }
+  
+  .description {
+	width: 60%;
+	border-right: 1px solid #cfcfcf;
   }
   
   p {
 	padding-bottom: 0;
   }
   
-  .backButtonContainer {
-	display: flex;
-	justify-content: flex-end;
+  .backButton {
+	align-self: flex-end;
 	margin-top: 30px;
   }
   

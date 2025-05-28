@@ -6,20 +6,8 @@
 // * import Provider from 'react-redux'
 // * wrap your App + Browser with Redux Provider in src/index.js
 import React from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter as Router } from "react-router-dom";
-import { Provider as ReduxProvider } from "react-redux";
+import ReactDOM from "react-dom";
 import App from "./App";
-import store from "./store";
 import "./index.css";
-
-const container = document.getElementById("root");
-const rootElement = createRoot(container);
-
-rootElement.render(
-  <ReduxProvider store={store}>
-    <Router>
-      <App />
-    </Router>
-  </ReduxProvider>
-);
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
